@@ -1,10 +1,10 @@
-Paracetamol,10.0
-Ibuprofeno,17.0
-Amoxicilina,14.0
-Vitamina C,23.0
+Paracetamol,5.0
+Ibuprofeno,7.0
+Amoxicilina,10.0
+Vitamina C,2.0
 Aspirina,3.0
 Insulina,30.0
 Antibiótico,15.0
 Antialérgico,8.0
-Anti-inflamatório,18.0
-
+Anti-inflamatório,9.0
+Antidepressivo,20.0
