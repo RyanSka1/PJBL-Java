@@ -44,22 +44,18 @@ public class Main {
             e.printStackTrace();
         }
 
-                saveButton.addActionListener(new ActionListener() {
+        saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String nome = nameField.getText();
                 String endereco = addressField.getText();
 
                 Cliente cliente = new Cliente(nome, endereco);
 
-                Random random = new Random();
-                int randomIndex = random.nextInt(medicamentos.size());
-                Medicamento medicamentoAleatorio = medicamentos.get(randomIndex);
-
                 Prescricao prescricao = new Prescricao();
                 try {
-                    prescricao.adicionarMedicamento(medicamentoAleatorio);
-                } catch (MedicamentoInexistenteException ex) {
-                    ex.printStackTrace();
+                    prescricao.adicionarMedicamento(getRandomMedicamento(medicamentos));
+                } catch (MedicamentoInexistenteException exception) {
+                    JOptionPane.showMessageDialog(frame, exception.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
                 cliente.adicionarPrescricao(prescricao);
 
@@ -73,10 +69,19 @@ public class Main {
                     ex.printStackTrace();
                 }
             }
+
+            private Medicamento getRandomMedicamento(ArrayList<Medicamento> medicamentos) throws MedicamentoInexistenteException {
+                if (medicamentos.size() > 0) {
+                    Random random = new Random();
+                    int randomIndex = random.nextInt(medicamentos.size());
+                    return medicamentos.get(randomIndex);
+                } else {
+                    throw new MedicamentoInexistenteException("Nenhum medicamento disponível");
+                }
+            }
         });
 
-
-                consultButton.addActionListener(new ActionListener() {
+        consultButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
                     File file = new File("clientes.txt");
