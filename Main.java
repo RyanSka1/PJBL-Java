@@ -1,72 +1,101 @@
-import javax.swing.JOptionPane;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Main {
+
     public static void main(String[] args) {
-        // Cria a interface gráfica
-        String nome = JOptionPane.showInputDialog("Insira o nome do cliente");
-        String endereco = JOptionPane.showInputDialog("Insira o endereço do cliente");
+        JFrame frame = new JFrame("PJBL Java");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Cliente cliente = new Cliente(nome, endereco);
+        JTextField textFieldNome = new JTextField();
+        JTextField textFieldEndereco = new JTextField();
+        JButton buttonEnviar = new JButton("Enviar");
+        JButton buttonConsultar = new JButton("Consultar");
 
-        // Lê os medicamentos do arquivo
-        try {
-            File file = new File("medicamentos.txt");
-            Scanner scanner = new Scanner(file);
+        buttonEnviar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nome = textFieldNome.getText();
+                String endereco = textFieldEndereco.getText();
 
-            while (scanner.hasNextLine()) {
-                String data = scanner.nextLine();
-                String[] parts = data.split(",");
+                Cliente cliente = new Cliente(nome, endereco);
 
-                String nomeMedicamento = parts[0];
-                double preco = Double.parseDouble(parts[1]);
+                ArrayList<Medicamento> medicamentos = new ArrayList<>();
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader("medicamentos.txt"));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] medicamentoData = line.split(",");
+                        Medicamento medicamento = new Medicamento(medicamentoData[0], Double.parseDouble(medicamentoData[1]));
+                        medicamentos.add(medicamento);
+                    }
+                    reader.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
 
-                Medicamento medicamento = new Medicamento(nomeMedicamento, preco);
+                Random random = new Random();
+                int randomIndex = random.nextInt(medicamentos.size());
+                Medicamento medicamentoAleatorio = medicamentos.get(randomIndex);
 
                 Prescricao prescricao = new Prescricao();
-                prescricao.adicionarMedicamento(medicamento);
+                try {
+                    prescricao.adicionarMedicamento(medicamentoAleatorio);
+                    cliente.adicionarPrescricao(prescricao);
+                } catch (MedicamentoInexistenteException ex) {
+                    System.out.println("Erro: " + ex.getMessage());
+                }
 
-                cliente.adicionarPrescricao(prescricao);
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream("clienteData.ser");
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    objectOutputStream.writeObject(cliente);
+                    objectOutputStream.close();
+                    fileOutputStream.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Append client information to clientes.txt
+                try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("clientes.txt", true)))) {
+                    out.println(cliente.getNome() + "," + cliente.getEndereco());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                cliente.imprimirInformacoes();
             }
+        });
 
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Erro ao abrir o arquivo de medicamentos.");
-            e.printStackTrace();
-        }
+        buttonConsultar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try (BufferedReader br = new BufferedReader(new FileReader("clientes.txt"))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
 
-        // Salva o objeto
-        try {
-            FileOutputStream fos = new FileOutputStream("cliente.ser");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+        panel.add(new JLabel("Nome: "));
+        panel.add(textFieldNome);
+        panel.add(new JLabel("Endereço: "));
+        panel.add(textFieldEndereco);
+        panel.add(buttonEnviar);
+        panel.add(buttonConsultar);
 
-            oos.writeObject(cliente);
-
-            oos.close();
-            fos.close();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-
-        // Recupera o objeto
-        try {
-            FileInputStream fis = new FileInputStream("cliente.ser");
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
-            Cliente clienteRecuperado = (Cliente) ois.readObject();
-            ois.close();
-
-            // Imprime as informações do cliente recuperado
-            clienteRecuperado.imprimirInformacoes();
-
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            return;
-        } catch (ClassNotFoundException c) {
-            System.out.println("Class not found");
-            c.printStackTrace();
-            return;
-        }
+        frame.getContentPane().add(panel, BorderLayout.CENTER);
+        frame.setSize(400, 150);
+        frame.setVisible(true);
     }
 }
