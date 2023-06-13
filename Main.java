@@ -16,10 +16,11 @@ public class Main {
         JTextField textFieldEndereco = new JTextField();
         JButton buttonEnviar = new JButton("Enviar");
         JButton buttonConsultar = new JButton("Consultar");
+        JButton buttonHistorico = new JButton("Historico");
 
         buttonEnviar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e1) {
                 String nome = textFieldNome.getText();
                 String endereco = textFieldEndereco.getText();
 
@@ -61,41 +62,64 @@ public class Main {
                     ex.printStackTrace();
                 }
 
-                // Append client information to clientes.txt
-                try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("clientes.txt", true)))) {
-                    out.println(cliente.getNome() + "," + cliente.getEndereco());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
                 cliente.imprimirInformacoes();
-            }
-        });
-
-        buttonConsultar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try (BufferedReader br = new BufferedReader(new FileReader("clientes.txt"))) {
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        System.out.println(line);
-                    }
+                
+                try {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("clientes.txt", true));
+                    writer.append("Cliente: ").append(cliente.getNome()).append(", Endereço: ").append(cliente.getEndereco()).append("\n");
+                    writer.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         });
 
-        JPanel panel = new JPanel(new GridLayout(3, 2));
+        buttonConsultar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e2) {
+                try {
+                    FileInputStream fileInputStream = new FileInputStream("clienteData.ser");
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                    Cliente clienteRecuperado = (Cliente) objectInputStream.readObject();
+                    objectInputStream.close();
+                    fileInputStream.close();
+
+                    if (clienteRecuperado != null) {
+                        clienteRecuperado.imprimirInformacoes();
+                    }
+                } catch (IOException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        buttonHistorico.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e3) {
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader("clientes.txt"));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                    reader.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        JPanel panel = new JPanel(new GridLayout(4, 2));
         panel.add(new JLabel("Nome: "));
         panel.add(textFieldNome);
         panel.add(new JLabel("Endereço: "));
         panel.add(textFieldEndereco);
         panel.add(buttonEnviar);
         panel.add(buttonConsultar);
+        panel.add(buttonHistorico);
 
         frame.getContentPane().add(panel, BorderLayout.CENTER);
-        frame.setSize(400, 150);
+        frame.setSize(400, 200);
         frame.setVisible(true);
     }
 }
