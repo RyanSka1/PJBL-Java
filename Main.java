@@ -1,67 +1,72 @@
-import javax.swing.*;
+import javax.swing.JOptionPane;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.Scanner;
 
 public class Main {
-
     public static void main(String[] args) {
-        String nome = JOptionPane.showInputDialog("Digite seu nome");
-        String endereco = JOptionPane.showInputDialog("Digite seu endereço");
+        // Cria a interface gráfica
+        String nome = JOptionPane.showInputDialog("Insira o nome do cliente");
+        String endereco = JOptionPane.showInputDialog("Insira o endereço do cliente");
 
         Cliente cliente = new Cliente(nome, endereco);
 
-        // Lê todos os medicamentos do arquivo medicamentos.txt
-        ArrayList<Medicamento> medicamentos = new ArrayList<>();
+        // Lê os medicamentos do arquivo
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("medicamentos.txt"));
-            String line;
-            while ((line = reader.readLine()) != null) {  // Lê até o fim do arquivo
-                String[] medicamentoData = line.split(",");  // Separa o nome e o preço pelo delimitador ","
-                Medicamento medicamento = new Medicamento(medicamentoData[0], Double.parseDouble(medicamentoData[1]));
-                medicamentos.add(medicamento);
+            File file = new File("medicamentos.txt");
+            Scanner scanner = new Scanner(file);
+
+            while (scanner.hasNextLine()) {
+                String data = scanner.nextLine();
+                String[] parts = data.split(",");
+
+                String nomeMedicamento = parts[0];
+                double preco = Double.parseDouble(parts[1]);
+
+                Medicamento medicamento = new Medicamento(nomeMedicamento, preco);
+
+                Prescricao prescricao = new Prescricao();
+                prescricao.adicionarMedicamento(medicamento);
+
+                cliente.adicionarPrescricao(prescricao);
             }
-            reader.close();  // Importante fechar o reader quando terminar
-        } catch (IOException e) {
+
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Erro ao abrir o arquivo de medicamentos.");
             e.printStackTrace();
         }
 
-        // Seleciona um medicamento aleatório e adiciona à prescrição do cliente
-        Random random = new Random();
-        int randomIndex = random.nextInt(medicamentos.size());
-        Medicamento medicamentoAleatorio = medicamentos.get(randomIndex);
-        Prescricao prescricao = new Prescricao();
-        prescricao.adicionarMedicamento(medicamentoAleatorio);
-        cliente.adicionarPrescricao(prescricao);
-
+        // Salva o objeto
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream("clienteData.ser");
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            FileOutputStream fos = new FileOutputStream("cliente.ser");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-            objectOutputStream.writeObject(cliente);
+            oos.writeObject(cliente);
 
-            objectOutputStream.close();
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            oos.close();
+            fos.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
 
-        Cliente clienteRecuperado = null;
-
+        // Recupera o objeto
         try {
-            FileInputStream fileInputStream = new FileInputStream("clienteData.ser");
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            FileInputStream fis = new FileInputStream("cliente.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
 
-            clienteRecuperado = (Cliente) objectInputStream.readObject();
+            Cliente clienteRecuperado = (Cliente) ois.readObject();
+            ois.close();
 
-            objectInputStream.close();
-            fileInputStream.close();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        if (clienteRecuperado != null) {
+            // Imprime as informações do cliente recuperado
             clienteRecuperado.imprimirInformacoes();
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            return;
+        } catch (ClassNotFoundException c) {
+            System.out.println("Class not found");
+            c.printStackTrace();
+            return;
         }
     }
 }

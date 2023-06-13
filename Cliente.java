@@ -1,9 +1,6 @@
 import java.util.ArrayList;
-import java.io.Serializable;
 
-public class Cliente extends Pessoa implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Cliente extends Pessoa {
     private ArrayList<Prescricao> prescricoes;
 
     public Cliente() {
@@ -23,8 +20,6 @@ public class Cliente extends Pessoa implements Serializable {
     @Override
     public void imprimirInformacoes() {
         System.out.println("Cliente: " + getNome() + ", Endereço: " + getEndereco());
-        for(Prescricao prescricao : prescricoes) {
-            prescricao.imprimirMedicamentos();
-        }
     }
 }
+

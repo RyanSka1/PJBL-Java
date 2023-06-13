@@ -4,7 +4,7 @@ Amoxicilina,10.0
 Vitamina C,2.0
 Aspirina,3.0
 Insulina,30.0
-Antibiotico,15.0
-Antialergico,8.0
-Anti-inflamatorio,9.0
+Antibiótico,15.0
+Antialérgico,8.0
+Anti-inflamatório,9.0
 Antidepressivo,20.0

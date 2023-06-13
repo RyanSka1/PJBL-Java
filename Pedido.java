@@ -1,11 +1,10 @@
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Pedido implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Pedido extends Pessoa {
     private ArrayList<Medicamento> medicamentos;
 
-    public Pedido() {
+    public Pedido(String nome, String endereco) {
+        super(nome, endereco);
         this.medicamentos = new ArrayList<>();
     }
 
@@ -15,5 +14,13 @@ public class Pedido implements Serializable {
 
     public ArrayList<Medicamento> getMedicamentos() {
         return medicamentos;
+    }
+
+    @Override
+    public void imprimirInformacoes() {
+        System.out.println("Pedido: " + getNome() + ", Endereço: " + getEndereco());
+        for (Medicamento medicamento : medicamentos) {
+            System.out.println("Medicamento: " + medicamento.getNome());
+        }
     }
 }
